@@ -38,17 +38,112 @@
 				else getTrues xs
 
 
---	Posiblemente tenga que apoyarse en funciones auxiliares vía
+--	Posiblemente tenga que apoyarse en funciones auxiliares via
 --	composición, pero no puede haber recursión directa.
 
 --		3. Usando un foldr:
 
-			--foldr :: (a -> b -> b) -> b -> [a] -> b
-
-			--foldr :: (a -> [b] -> [b])  -> [b] -> [a] -> [b]
-
 			filterF :: (a -> Bool) -> [a] -> [a]
 			filterF f [] = []
-			filterF f ls = foldr (\ a base -> if f a then a:base else base) [] ls
+			filterF f ls = foldr (\ a b -> if f a then a:b else b) [] ls
 
---Verificador de Tautologias (12 puntos)
+--Verificador de Tautologías (12 puntos)
+--Representación de Expresiones
+--Las expresiones de Lógica Proposicional de Primer Orden pueden
+--definirse recursivamente como sigue:
+
+--Una constante booleana True o False es una expresión de 
+--Lógica Proposicional de Primer Orden.
+
+--Una variable, representada por un String es una expresión de
+--Lógica Proposicional de Primer Orden.
+
+--La negación de una expresión de Lógica Proposicional de 
+--Primer Orden, es una expresión de Lógica Proposicional de
+--Primer Orden.
+
+--La conjunción de dos expresiones de Lógica Proposicional
+--de Primer Orden, es una expresión de Lógica Proposicional 
+--de Primer Orden.
+
+--La disyunción de dos expresiones de Lógica Proposicional
+--de Primer Orden, es una expresión de Lógica Proposicional 
+--de Primer Orden.
+
+--La implicación de dos expresiones de Lógica Proposicional
+--de Primer Orden, es una expresión de Lógica Proposicional 
+--de Primer Orden.
+
+--Defina un tipo recursivo monomórfico Haskell para representar
+--las expresiones de Lógica Proposicional. La definición del tipo
+--debe incluir la cantidad mínima de instancias de clases de tipo
+--necesarias para la funcionalidad que se solicita en el resto de
+--este ejercicio.
+  
+			data Proposition = 
+				Constante Bool 
+				| Variable String 
+				| Negacion Proposition 
+				| Conjuncion Proposition Proposition 
+				| Disjuncion Proposition Proposition 
+				| Implicacion Proposition Proposition
+				deriving (Show, Eq)
+
+--Ambiente de Evaluación
+--Para poder evaluar el valor de verdad de una proposición 
+--particular es necesario contar con los valores de verdad 
+--asociados a las variables involucradas. Esto se denomina el
+
+--Ambiente de Evaluación y será modelado con un tipo de datos simple
+
+			type Environment = [(String,Bool)]
+
+--Escriba la función
+--que determina si la variable k está definida en el ambiente e, 
+--produciendo su valor booleano en caso afirmativo.
+
+
+			find :: Environment -> String -> Maybe Bool
+
+			find _ [] = Nothing
+			find [] _ = Nothing
+			find (x:xs) s = if fst x == s then Just (snd x) else find xs s 
+
+--Escriba la función
+--addOrReplace :: Environment -> String -> Bool -> Environment
+--addOrReplace e k v = undefined
+
+--tal que:
+--Si en el ambiente e no existe ninguna asociación para la 
+--variable k, la función produce un nuevo ambiente igual al
+-- original pero agregando la asociación (k,v) al principio.
+
+--Si en el ambiente e ya existe una asociación para la variable k,
+--la función produce un nuevo ambiente igual al original 
+--reemplazando la asociación existente por la nueva.
+
+--Escriba la función
+
+
+			add :: Environment-> String -> Bool-> Environment
+			add (x:ys) s b
+			    | s == fst x = (s,b):ys
+			    | otherwise = x : add ys s b
+			add ys s b = ys
+
+			addOrReplace :: Environment -> String -> Bool -> Environment
+			addOrReplace ls [] _    = ls
+			addOrReplace [] s b     = [(s,b)]
+			addOrReplace ls s b = if find ls s == Nothing then (s,b):ls
+										else add ls s b
+
+
+
+--Escriba la función
+--remove :: Environment -> String -> Environment
+--remove e k = undefined
+--tal que:
+--• Si en el ambiente e no existe ninguna asociación para la variable k, la función
+--produce el mismo ambiente sin modificar.
+--• Si en el ambiente e existe una asociación para la variable k, la función produce
+--un nuevo ambiente igual al original eliminando la asociación existente.
